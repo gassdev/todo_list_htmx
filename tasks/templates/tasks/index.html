@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo List</title>
+    <script src="https://unpkg.com/htmx.org@1.7.0"></script>
+  </head>
+  <body>
+    <h1>Todo List</h1>
+
+    <div id="collections">
+      {% for collection in collections %}
+        {% include 'tasks/collection.html' with collection=collection %}
+      {% endfor %}
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <input type="text" name="collection-name">
+      <button hx-post="{% url 'add-collection' %}" hx-target="#collections" hx-swap="beforeend" type="submit">Ajouter</button>
+    </form>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="text" name="task-description">
+      <button hx-vals="js:{collection: getCollectionFromURL()}" hx-post="{% url 'add-task' %}" hx-target="#tasks" hx-swap="beforeend" type="submit">Ajouter</button>
+    </form>
+
+
+    <div id="tasks">
+      {% include 'tasks/tasks.html' with tasks=tasks collection=collection %}
+    </div>
+
+    <script>
+      document.body.addEventListener("htmx:responseError", function(evt){
+        alert(evt.detail.xhr.responseText)
+      })
+
+      function getCollectionFromURL() {
+        let url = new URL(window.location.href)
+        let searchParams = url.searchParams
+        return searchParams.get("collection")
+      }
+    </script>
+  </body>
+</html>
